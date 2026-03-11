@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Switchyard Runtime Snapshot",
+  "type": "object",
+  "required": [
+    "clock",
+    "next_task_id",
+    "tasks",
+    "pending_signals"
+  ],
+  "properties": {
+    "clock": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "next_task_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pending_signals": {
+      "type": "array",
+      "items": {
+        "type": [
+          "integer",
+          "null"
+        ]
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "required": [
+          "id",
+          "program_id",
+          "ip",
+          "scope_root",
+          "outcome",
+          "wait"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "program_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "ip": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "parent": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "scope_root": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "wait": {
+            "type": "object",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "ticks",
+                  "signal",
+                  "predicate",
+                  "children_all",
+                  "race"
+                ]
+              },
+              "until_tick": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "signal": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "predicate": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "left": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "right": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

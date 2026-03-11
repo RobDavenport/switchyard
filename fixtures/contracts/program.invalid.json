@@ -1,0 +1,12 @@
+{
+  "programs": [
+    {
+      "id": 0,
+      "ops": [
+        {
+          "op": "wait_ticks"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+use crate::ids::{ActionId, PredicateId, ProgramId, SignalId};
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Op {
+    Action(ActionId),
+    WaitTicks(u32),
+    WaitSignal(SignalId),
+    WaitPredicate(PredicateId),
+    Spawn(ProgramId),
+    JoinChildren,
+    Race2(ProgramId, ProgramId),
+    Succeed,
+    Fail,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BuildError {
+    CapacityExceeded,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Program<'a> {
+    pub id: ProgramId,
+    pub ops: &'a [Op],
+}
+
+impl<'a> Program<'a> {
+    pub const fn new(id: ProgramId, ops: &'a [Op]) -> Self {
+        Self { id, ops }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct ProgramBuilder<const CAPACITY: usize> {
+    id: ProgramId,
+    ops: [Op; CAPACITY],
+    len: usize,
+}
+
+impl<const CAPACITY: usize> ProgramBuilder<CAPACITY> {
+    pub fn new(id: ProgramId) -> Self {
+        Self { id, ops: [Op::Succeed; CAPACITY], len: 0 }
+    }
+
+    pub fn push(&mut self, op: Op) -> Result<&mut Self, BuildError> {
+        if self.len >= CAPACITY {
+            return Err(BuildError::CapacityExceeded);
+        }
+
+        self.ops[self.len] = op;
+        self.len += 1;
+        Ok(self)
+    }
+
+    pub fn action(&mut self, action: ActionId) -> Result<&mut Self, BuildError> {
+        self.push(Op::Action(action))
+    }
+
+    pub fn wait_ticks(&mut self, ticks: u32) -> Result<&mut Self, BuildError> {
+        self.push(Op::WaitTicks(ticks))
+    }
+
+    pub fn wait_signal(&mut self, signal: SignalId) -> Result<&mut Self, BuildError> {
+        self.push(Op::WaitSignal(signal))
+    }
+
+    pub fn wait_predicate(&mut self, predicate: PredicateId) -> Result<&mut Self, BuildError> {
+        self.push(Op::WaitPredicate(predicate))
+    }
+
+    pub fn spawn(&mut self, program_id: ProgramId) -> Result<&mut Self, BuildError> {
+        self.push(Op::Spawn(program_id))
+    }
+
+    pub fn join_children(&mut self) -> Result<&mut Self, BuildError> {
+        self.push(Op::JoinChildren)
+    }
+
+    pub fn race2(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::Race2(left_program, right_program))
+    }
+
+    pub fn succeed(&mut self) -> Result<&mut Self, BuildError> {
+        self.push(Op::Succeed)
+    }
+
+    pub fn fail(&mut self) -> Result<&mut Self, BuildError> {
+        self.push(Op::Fail)
+    }
+
+    pub fn program(&self) -> Program<'_> {
+        Program::new(self.id, &self.ops[..self.len])
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct OwnedProgram {
+    id: ProgramId,
+    ops: Vec<Op>,
+}
+
+#[cfg(feature = "alloc")]
+impl OwnedProgram {
+    pub fn new(id: ProgramId) -> Self {
+        Self { id, ops: Vec::new() }
+    }
+
+    pub fn id(&self) -> ProgramId {
+        self.id
+    }
+
+    pub fn ops(&self) -> &[Op] {
+        &self.ops
+    }
+
+    pub fn clear(&mut self) -> &mut Self {
+        self.ops.clear();
+        self
+    }
+
+    pub fn push(&mut self, op: Op) -> &mut Self {
+        self.ops.push(op);
+        self
+    }
+
+    pub fn action(&mut self, action: ActionId) -> &mut Self {
+        self.push(Op::Action(action))
+    }
+
+    pub fn wait_ticks(&mut self, ticks: u32) -> &mut Self {
+        self.push(Op::WaitTicks(ticks))
+    }
+
+    pub fn wait_signal(&mut self, signal: SignalId) -> &mut Self {
+        self.push(Op::WaitSignal(signal))
+    }
+
+    pub fn wait_predicate(&mut self, predicate: PredicateId) -> &mut Self {
+        self.push(Op::WaitPredicate(predicate))
+    }
+
+    pub fn spawn(&mut self, program_id: ProgramId) -> &mut Self {
+        self.push(Op::Spawn(program_id))
+    }
+
+    pub fn join_children(&mut self) -> &mut Self {
+        self.push(Op::JoinChildren)
+    }
+
+    pub fn race2(&mut self, left_program: ProgramId, right_program: ProgramId) -> &mut Self {
+        self.push(Op::Race2(left_program, right_program))
+    }
+
+    pub fn succeed(&mut self) -> &mut Self {
+        self.push(Op::Succeed)
+    }
+
+    pub fn fail(&mut self) -> &mut Self {
+        self.push(Op::Fail)
+    }
+
+    pub fn as_program(&self) -> Program<'_> {
+        Program::new(self.id, &self.ops)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct ProgramCatalog<'a> {
+    programs: &'a [Program<'a>],
+}
+
+impl<'a> ProgramCatalog<'a> {
+    pub const fn new(programs: &'a [Program<'a>]) -> Self {
+        Self { programs }
+    }
+
+    pub fn get(&self, id: ProgramId) -> Option<&'a Program<'a>> {
+        let mut index = 0usize;
+        while index < self.programs.len() {
+            if self.programs[index].id == id {
+                return Some(&self.programs[index]);
+            }
+            index += 1;
+        }
+        None
+    }
+
+    pub const fn programs(&self) -> &'a [Program<'a>] {
+        self.programs
+    }
+}

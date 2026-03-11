@@ -1,0 +1,13 @@
+[package]
+name = "switchyard-debug"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Debug helpers for switchyard trace events"
+
+[dependencies]
+switchyard-core = { path = "../switchyard-core", features = ["alloc"] }
+
+[lib]
+name = "switchyard_debug"
+path = "src/lib.rs"

@@ -1,0 +1,10 @@
+/target
+/.idea
+/.vscode
+/.DS_Store
+*.swp
+*.tmp
+*.log
+*.zip
+/coverage
+/.pytest_cache

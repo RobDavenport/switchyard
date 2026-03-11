@@ -1,0 +1,23 @@
+{
+  "clock": 3,
+  "next_task_id": 2,
+  "pending_signals": [
+    null,
+    7
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "program_id": 2,
+      "ip": 1,
+      "parent": null,
+      "scope_root": 1,
+      "outcome": "running",
+      "wait": {
+        "kind": "signal",
+        "signal": 7
+      }
+    },
+    null
+  ]
+}

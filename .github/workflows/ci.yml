@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          rustc --version
+          cargo --version
+          python3 --version
+
+      - name: Ensure rustfmt and clippy are present
+        run: rustup component add rustfmt clippy
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Lint
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Run tests
+        run: cargo test --workspace --all-features
+
+      - name: Check no-default-features build
+        run: cargo check --workspace --lib --no-default-features
+
+      - name: Validate contract fixtures
+        run: python3 scripts/validate_contract_fixtures.py
+
+      - name: Build docs
+        run: cargo doc --workspace --no-deps

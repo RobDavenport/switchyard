@@ -1,0 +1,16 @@
+[package]
+name = "switchyard-core"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Deterministic no_std structured-concurrency runtime walking skeleton"
+
+[features]
+default = []
+alloc = []
+serde = []
+std = ["alloc"]
+
+[lib]
+name = "switchyard_core"
+path = "src/lib.rs"

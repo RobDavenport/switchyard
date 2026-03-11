@@ -1,0 +1,23 @@
+version: 1
+items:
+  - id: switchyard.bootstrap
+    status: done
+    depends_on: []
+  - id: switchyard.contracts
+    status: done
+    depends_on: [switchyard.bootstrap]
+  - id: switchyard.scheduler-core
+    status: done
+    depends_on: [switchyard.bootstrap]
+  - id: switchyard.persistence-and-inspection
+    status: done
+    depends_on: [switchyard.scheduler-core]
+  - id: switchyard.authoring-surface
+    status: in_progress
+    depends_on: [switchyard.scheduler-core]
+  - id: switchyard.trace-and-debug-hooks
+    status: in_progress
+    depends_on: [switchyard.persistence-and-inspection]
+  - id: switchyard.docs-and-release-hygiene
+    status: done
+    depends_on: [switchyard.bootstrap]

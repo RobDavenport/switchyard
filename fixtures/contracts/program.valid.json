@@ -1,0 +1,39 @@
+{
+  "programs": [
+    {
+      "id": 1,
+      "ops": [
+        {
+          "op": "spawn",
+          "program": 2
+        },
+        {
+          "op": "join_children"
+        },
+        {
+          "op": "action",
+          "action": 9
+        },
+        {
+          "op": "succeed"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "ops": [
+        {
+          "op": "wait_signal",
+          "signal": 7
+        },
+        {
+          "op": "action",
+          "action": 1
+        },
+        {
+          "op": "succeed"
+        }
+      ]
+    }
+  ]
+}
