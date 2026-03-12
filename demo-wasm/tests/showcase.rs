@@ -1,6 +1,21 @@
 use switchyard_demo_wasm::ShowcaseState;
 
 #[test]
+fn showcase_bootstrap_points_directly_at_wasm_payload() {
+    let bootstrap = include_str!("../www/main.js");
+    assert!(
+        bootstrap.contains(
+            r#"const wasmUrl = new URL("./pkg/switchyard_demo_wasm_bg.wasm", import.meta.url);"#
+        ),
+        "showcase bootstrap should compute the wasm payload URL explicitly"
+    );
+    assert!(
+        bootstrap.contains("await wasmModule.default(wasmUrl);"),
+        "showcase bootstrap should initialize the wasm module with the explicit payload URL"
+    );
+}
+
+#[test]
 fn showcase_view_exposes_waiting_signal_and_trace_after_first_tick() {
     let mut showcase = ShowcaseState::new();
 

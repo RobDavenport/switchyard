@@ -721,7 +721,8 @@ const setAutoTick = (enabled) => {
 const init = async () => {
   try {
     const wasmModule = await import("./pkg/switchyard_demo_wasm.js");
-    await wasmModule.default();
+    const wasmUrl = new URL("./pkg/switchyard_demo_wasm_bg.wasm", import.meta.url);
+    await wasmModule.default(wasmUrl);
     wasmApp = new wasmModule.ShowcaseApp();
     applyPresetUi(currentPreset);
     refreshCliHandoffUi();
