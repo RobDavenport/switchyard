@@ -33,6 +33,9 @@ items:
   - id: switchyard.asset-bundle-summary-cli
     status: done
     depends_on: [switchyard.asset-bundle-cli, switchyard.catalog-inspect-cli]
+  - id: switchyard.asset-bundle-normalize-cli
+    status: done
+    depends_on: [switchyard.asset-bundle-cli, switchyard.asset-bundle-summary-cli]
   - id: switchyard.asset-normalize-cli
     status: done
     depends_on: [switchyard.catalog-inspect-cli, switchyard.contracts]

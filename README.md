@@ -115,6 +115,7 @@ The repo also includes a host-side inspection tool in `crates/switchyard-cli` fo
 - `snapshot-summary <path>` to emit deterministic JSON with clock, task count, pending signals, wait-kind histogram, and outcome histogram
 - `snapshot-check <catalog> <snapshot>` to validate that a runtime snapshot only references programs and tasks that are compatible with the supplied catalog
 - `asset-bundle-summary <manifest>` to emit deterministic JSON for a validated asset bundle manifest, including catalog program ids plus per-snapshot clocks, task counts, pending signal counts, and used program/mind ids
+- `asset-bundle-normalize <input> [output]` to rewrite asset bundle manifests into canonical pretty-printed form with deterministic snapshot-id ordering after real validation
 - `catalog-normalize <input> [output]` to rewrite catalog JSON into a canonical pretty-printed form after real compile validation
 - `snapshot-normalize <input> [output]` to rewrite contract-shaped runtime snapshots into the same canonical pretty-printed form
 - `asset-bundle-check <manifest>` to validate a `switchyard.asset-bundle-cli` asset bundle manifest, resolve its referenced catalog and snapshot assets, and run the CLI validation flow across the bundle
@@ -127,6 +128,7 @@ cargo run -p switchyard-cli -- catalog-summary fixtures/contracts/program.valid.
 cargo run -p switchyard-cli -- snapshot-summary fixtures/contracts/snapshot.valid.json
 cargo run -p switchyard-cli -- snapshot-check fixtures/contracts/program.valid.json fixtures/contracts/snapshot.valid.json
 cargo run -p switchyard-cli -- asset-bundle-summary fixtures/contracts/asset-bundle.valid.json
+cargo run -p switchyard-cli -- asset-bundle-normalize fixtures/contracts/asset-bundle.valid.json
 cargo run -p switchyard-cli -- catalog-normalize fixtures/contracts/program.valid.json
 cargo run -p switchyard-cli -- snapshot-normalize fixtures/contracts/snapshot.valid.json
 cargo run -p switchyard-cli -- asset-bundle-check fixtures/contracts/asset-bundle.valid.json
@@ -179,7 +181,7 @@ For multi-file handoff flows, the same exported assets can be wrapped in a
 - `switchyard-cli` for deterministic catalog compile checks plus catalog/snapshot JSON summaries
 - `switchyard-cli snapshot-check` for catalog-versus-snapshot compatibility validation in save/load and editor export pipelines
 - `switchyard-cli asset-bundle-check` plus `asset-bundle-summary` for validating and inspecting whole catalog/snapshot asset sets in CI and tooling
-- `switchyard-cli` normalization commands for canonical catalog/snapshot output in CI and editor save flows
+- `switchyard-cli` normalization commands for canonical catalog/snapshot/asset-bundle output in CI and editor save flows
 - Browser-to-CLI export flow for handing live-authored catalogs and runtime snapshots into `switchyard-cli`
 - Contract schemas, valid/invalid fixtures, CI, GitHub Pages deployment, and prompt-pack loop automation
 

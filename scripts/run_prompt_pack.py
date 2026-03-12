@@ -73,6 +73,11 @@ PROMPT_MAP = {
         "codex/prompts/05-TESTS-AND-VALIDATION.md",
         "codex/prompts/07-DOCS-FINAL-AUDIT.md",
     ],
+    "switchyard.asset-bundle-normalize-cli": [
+        "codex/prompts/04-APIS-OR-PLUGIN-LAYER.md",
+        "codex/prompts/05-TESTS-AND-VALIDATION.md",
+        "codex/prompts/07-DOCS-FINAL-AUDIT.md",
+    ],
     "switchyard.asset-normalize-cli": [
         "codex/prompts/04-APIS-OR-PLUGIN-LAYER.md",
         "codex/prompts/05-TESTS-AND-VALIDATION.md",
