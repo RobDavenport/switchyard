@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "catalog": "program.valid.json",
+  "snapshots": [
+    {
+      "id": "baseline",
+      "path": "snapshot.valid.json"
+    },
+    {
+      "id": "restore-point",
+      "path": "snapshot.valid.json"
+    }
+  ]
+}

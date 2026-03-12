@@ -36,6 +36,7 @@
         "required": [
           "id",
           "program_id",
+          "mind_id",
           "ip",
           "scope_root",
           "outcome",
@@ -47,6 +48,10 @@
             "minimum": 1
           },
           "program_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mind_id": {
             "type": "integer",
             "minimum": 1
           },
@@ -84,15 +89,24 @@
                 "enum": [
                   "ready",
                   "ticks",
+                  "race_or_ticks",
+                  "timeout",
+                  "signal_or_ticks",
                   "signal",
                   "predicate",
+                  "repeat_until_predicate",
                   "children_all",
+                  "children_any",
                   "race"
                 ]
               },
               "until_tick": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "child": {
+                "type": "integer",
+                "minimum": 1
               },
               "signal": {
                 "type": "integer",
@@ -101,6 +115,10 @@
               "predicate": {
                 "type": "integer",
                 "minimum": 1
+              },
+              "resume_at_tick": {
+                "type": "integer",
+                "minimum": 0
               },
               "left": {
                 "type": "integer",

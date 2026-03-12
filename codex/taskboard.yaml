@@ -21,6 +21,75 @@ items:
   - id: switchyard.browser-showcase
     status: done
     depends_on: [switchyard.authoring-surface, switchyard.trace-and-debug-hooks]
+  - id: switchyard.catalog-inspect-cli
+    status: done
+    depends_on: [switchyard.authoring-surface, switchyard.persistence-and-inspection, switchyard.contracts]
+  - id: switchyard.snapshot-compat-cli
+    status: done
+    depends_on: [switchyard.catalog-inspect-cli, switchyard.persistence-and-inspection, switchyard.contracts]
+  - id: switchyard.asset-bundle-cli
+    status: done
+    depends_on: [switchyard.snapshot-compat-cli, switchyard.asset-normalize-cli, switchyard.contracts]
+  - id: switchyard.asset-bundle-summary-cli
+    status: done
+    depends_on: [switchyard.asset-bundle-cli, switchyard.catalog-inspect-cli]
+  - id: switchyard.asset-normalize-cli
+    status: done
+    depends_on: [switchyard.catalog-inspect-cli, switchyard.contracts]
+  - id: switchyard.showcase-cli-export
+    status: done
+    depends_on: [switchyard.catalog-inspect-cli, switchyard.browser-showcase, switchyard.runtime-editable-scripts]
+  - id: switchyard.multimind-showcase
+    status: done
+    depends_on: [switchyard.browser-showcase, switchyard.mind-change-scheduling, switchyard.visual-script-editor]
+  - id: switchyard.shootemup-showcase
+    status: done
+    depends_on: [switchyard.browser-showcase, switchyard.external-host-calls, switchyard.visual-script-editor]
+  - id: switchyard.director-handoff-example
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.persistence-and-inspection]
+  - id: switchyard.runtime-editable-scripts
+    status: done
+    depends_on: [switchyard.authoring-surface, switchyard.browser-showcase]
+  - id: switchyard.visual-script-editor
+    status: done
+    depends_on: [switchyard.runtime-editable-scripts, switchyard.browser-showcase]
+  - id: switchyard.conditional-branching
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.bounded-repeat
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.repeat-until-predicate
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.absolute-deadline-authoring
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.signal-or-timeout-wait
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.child-timeout-combinator
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.timeout-race-combinator
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.join-any-children
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.external-host-calls
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.mind-change-scheduling
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.explicit-sync
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
+  - id: switchyard.explicit-race
+    status: done
+    depends_on: [switchyard.scheduler-core, switchyard.authoring-surface, switchyard.visual-script-editor]
   - id: switchyard.docs-and-release-hygiene
     status: done
     depends_on: [switchyard.bootstrap]

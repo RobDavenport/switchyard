@@ -8,11 +8,11 @@ A single `switchyard-core` crate owns IDs, programs, scheduler, and snapshots. O
 
 ### Boundaries
 
-The host controls time by calling `tick()`. The host is also the only source of signals, predicate readiness, and side-effect execution via `Host::on_action`.
+The host controls time by calling `tick()`. The host is also the only source of signals, predicate readiness, active-mind scheduling, and side-effect execution via `Host::on_action` and `Host::on_call`.
 
 ### Data flow
 
-Program catalog -> runtime spawn -> host-driven tick -> wake waiting tasks -> execute ops in stable order -> emit host actions -> snapshot or inspect state.
+Program catalog -> runtime spawn -> host-driven tick -> filter runnable tasks by active mind -> wake waiting tasks -> execute ops in stable order -> emit host actions or host calls -> snapshot or inspect state.
 
 ### Contracts
 
@@ -20,13 +20,15 @@ JSON Schema files describe the walking-skeleton program catalog and runtime snap
 
 ### Storage strategy
 
-Fixed-capacity arrays back active task slots and pending signals. Task IDs are monotonic, inspection is plain-data based, and no mandatory allocator is required.
+Fixed-capacity arrays back active task slots and pending signals. Task IDs are monotonic, per-task `mind_id` membership is persisted in snapshots and inspection output, and no mandatory allocator is required.
 
 ### Integration points
 
 Host integration is intentionally narrow:
 - `Host::on_action` for effect emission
+- `Host::on_call` for deterministic external gameplay commands
 - `Host::query_ready` for explicit predicate wake-up
+- `Host::is_mind_active` for host-controlled mind gating
 - `emit_signal` for externally supplied event IDs
 
 ### Security and performance

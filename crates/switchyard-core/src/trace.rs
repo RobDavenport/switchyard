@@ -1,4 +1,5 @@
-use crate::ids::{ActionId, ProgramId, SignalId, TaskId};
+use crate::ids::{ActionId, MindId, ProgramId, SignalId, TaskId};
+use crate::program::HostCall;
 use crate::runtime::{Outcome, StepReport, WaitReason};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -11,6 +12,8 @@ pub enum TraceEvent {
     TaskWaiting { task: TaskId, reason: WaitReason },
     TaskWoken { task: TaskId, reason: WaitReason },
     ActionEmitted { task: TaskId, action: ActionId },
+    CallEmitted { task: TaskId, call: HostCall },
+    TaskMindChanged { task: TaskId, from: MindId, to: MindId },
     TaskFinished { task: TaskId, outcome: Outcome },
 }
 

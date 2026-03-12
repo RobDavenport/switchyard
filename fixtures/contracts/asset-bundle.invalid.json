@@ -1,0 +1,14 @@
+{
+  "version": 0,
+  "catalog": "",
+  "snapshots": [
+    {
+      "id": "dup",
+      "path": "snapshot.valid.json"
+    },
+    {
+      "id": "dup",
+      "path": ""
+    }
+  ]
+}

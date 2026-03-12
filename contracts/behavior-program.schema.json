@@ -33,11 +33,26 @@
                   "type": "string",
                   "enum": [
                     "action",
+                    "call",
+                    "change_mind",
+                    "repeat_until_predicate",
+                    "wait_until_tick",
+                    "wait_signal_until_tick",
+                    "timeout_until_tick",
+                    "race_children_until_tick",
+                    "race_children_or_ticks",
+                    "timeout_ticks",
                     "wait_ticks",
                     "wait_signal",
+                    "wait_signal_or_ticks",
                     "wait_predicate",
                     "spawn",
+                    "sync_children",
+                    "branch_predicate",
+                    "repeat_count",
                     "join_children",
+                    "join_any_children",
+                    "race_children",
                     "race2",
                     "succeed",
                     "fail"
@@ -47,7 +62,31 @@
                   "type": "integer",
                   "minimum": 1
                 },
+                "call": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "mind": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "arg0": {
+                  "type": "integer"
+                },
+                "arg1": {
+                  "type": "integer"
+                },
+                "arg2": {
+                  "type": "integer"
+                },
+                "arg3": {
+                  "type": "integer"
+                },
                 "ticks": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "until_tick": {
                   "type": "integer",
                   "minimum": 0
                 },
@@ -60,6 +99,18 @@
                   "minimum": 1
                 },
                 "program": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "if_true": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "if_false": {
                   "type": "integer",
                   "minimum": 1
                 },

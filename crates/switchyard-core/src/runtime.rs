@@ -1,5 +1,5 @@
-use crate::ids::{ActionId, PredicateId, ProgramId, SignalId, TaskId};
-use crate::program::ProgramCatalog;
+use crate::ids::{ActionId, MindId, PredicateId, ProgramId, SignalId, TaskId};
+use crate::program::{HostCall, ProgramCatalog};
 use crate::snapshot::RuntimeSnapshot;
 use crate::trace::{NoopTraceSink, TraceEvent, TraceSink};
 
@@ -22,7 +22,25 @@ pub enum WaitReason {
     },
     Signal(SignalId),
     Predicate(PredicateId),
+    SignalOrTicks {
+        signal: SignalId,
+        until_tick: u64,
+    },
+    RaceOrTicks {
+        left: TaskId,
+        right: TaskId,
+        until_tick: u64,
+    },
+    Timeout {
+        child: TaskId,
+        until_tick: u64,
+    },
+    RepeatUntilPredicate {
+        predicate: PredicateId,
+        resume_at_tick: u64,
+    },
     ChildrenAll,
+    ChildrenAny,
     Race {
         left: TaskId,
         right: TaskId,
@@ -34,6 +52,7 @@ pub enum WaitReason {
 pub struct TaskRecord {
     pub id: TaskId,
     pub program_id: ProgramId,
+    pub mind_id: MindId,
     pub ip: usize,
     pub parent: Option<TaskId>,
     pub scope_root: TaskId,
@@ -59,6 +78,12 @@ pub enum RuntimeError {
 pub trait Host {
     fn on_action(&mut self, task: TaskId, action: ActionId);
 
+    fn on_call(&mut self, _task: TaskId, _call: HostCall) {}
+
+    fn is_mind_active(&mut self, _mind: MindId) -> bool {
+        true
+    }
+
     fn query_ready(&mut self, _predicate: PredicateId) -> bool {
         false
     }
@@ -72,6 +97,8 @@ pub struct Runtime<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
 impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
     Runtime<'a, MAX_TASKS, MAX_PENDING_SIGNALS>
 {
+    const PRIMARY_MIND: MindId = MindId(1);
+
     pub fn new(programs: ProgramCatalog<'a>) -> Self {
         Self { programs, snapshot: RuntimeSnapshot::default() }
     }
@@ -203,7 +230,10 @@ impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
             return Ok(false);
         };
 
-        if task.outcome != Outcome::Running || task.wait != WaitReason::Ready {
+        if task.outcome != Outcome::Running
+            || task.wait != WaitReason::Ready
+            || !host.is_mind_active(task.mind_id)
+        {
             return Ok(false);
         }
 
@@ -238,9 +268,216 @@ impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
                     self.snapshot.tasks[slot] = Some(task);
                     progress = true;
                 }
+                crate::program::Op::Call(call) => {
+                    host.on_call(task.id, call);
+                    trace.on_event(TraceEvent::CallEmitted { task: task.id, call });
+                    report.actions_emitted += 1;
+                    task.ip += 1;
+                    self.snapshot.tasks[slot] = Some(task);
+                    progress = true;
+                }
+                crate::program::Op::ChangeMind(mind_id) => {
+                    let from = task.mind_id;
+                    task.ip += 1;
+                    task.mind_id = mind_id;
+                    self.snapshot.tasks[slot] = Some(task);
+                    trace.on_event(TraceEvent::TaskMindChanged {
+                        task: task.id,
+                        from,
+                        to: mind_id,
+                    });
+                    progress = true;
+                    break;
+                }
+                crate::program::Op::RepeatUntilPredicate(predicate, program_id) => {
+                    if host.query_ready(predicate) {
+                        task.ip += 1;
+                        self.snapshot.tasks[slot] = Some(task);
+                        progress = true;
+                    } else {
+                        self.snapshot.tasks[slot] = Some(task);
+                        let _ = self.spawn_task(
+                            program_id,
+                            Some(task.id),
+                            Some(task.scope_root),
+                            trace,
+                        )?;
+                        let mut current = self.snapshot.tasks[slot].expect("task must exist");
+                        current.wait = WaitReason::RepeatUntilPredicate {
+                            predicate,
+                            resume_at_tick: self.snapshot.clock.saturating_add(1),
+                        };
+                        self.snapshot.tasks[slot] = Some(current);
+                        trace.on_event(TraceEvent::TaskWaiting {
+                            task: current.id,
+                            reason: current.wait,
+                        });
+                        progress = true;
+                        break;
+                    }
+                }
+                crate::program::Op::WaitUntilTick(until_tick) => {
+                    task.ip += 1;
+                    if self.snapshot.clock < until_tick {
+                        task.wait = WaitReason::Ticks { until_tick };
+                        self.snapshot.tasks[slot] = Some(task);
+                        trace
+                            .on_event(TraceEvent::TaskWaiting { task: task.id, reason: task.wait });
+                        progress = true;
+                        break;
+                    }
+                    self.snapshot.tasks[slot] = Some(task);
+                    progress = true;
+                }
+                crate::program::Op::WaitSignalUntilTick(signal, until_tick) => {
+                    task.ip += 1;
+                    if !self.signal_pending(signal) && self.snapshot.clock < until_tick {
+                        task.wait = WaitReason::SignalOrTicks { signal, until_tick };
+                        self.snapshot.tasks[slot] = Some(task);
+                        trace
+                            .on_event(TraceEvent::TaskWaiting { task: task.id, reason: task.wait });
+                        progress = true;
+                        break;
+                    }
+                    self.snapshot.tasks[slot] = Some(task);
+                    progress = true;
+                }
+                crate::program::Op::TimeoutUntilTick(until_tick, program_id) => {
+                    task.ip += 1;
+                    if self.snapshot.clock >= until_tick {
+                        self.snapshot.tasks[slot] = Some(task);
+                        progress = true;
+                    } else {
+                        self.snapshot.tasks[slot] = Some(task);
+                        let child = self.spawn_task(
+                            program_id,
+                            Some(task.id),
+                            Some(task.scope_root),
+                            trace,
+                        )?;
+                        let mut current = self.snapshot.tasks[slot].expect("task must exist");
+                        current.wait = WaitReason::Timeout { child, until_tick };
+                        self.snapshot.tasks[slot] = Some(current);
+                        trace.on_event(TraceEvent::TaskWaiting {
+                            task: current.id,
+                            reason: current.wait,
+                        });
+                        progress = true;
+                        break;
+                    }
+                }
+                crate::program::Op::RaceChildrenUntilTick(
+                    left_program,
+                    right_program,
+                    until_tick,
+                ) => {
+                    task.ip += 1;
+                    if self.snapshot.clock >= until_tick {
+                        self.snapshot.tasks[slot] = Some(task);
+                        progress = true;
+                    } else {
+                        if self.available_slots() < 2 {
+                            return Err(RuntimeError::CapacityExceeded);
+                        }
+                        self.snapshot.tasks[slot] = Some(task);
+                        let left = self.spawn_task(
+                            left_program,
+                            Some(task.id),
+                            Some(task.scope_root),
+                            trace,
+                        )?;
+                        let right = self.spawn_task(
+                            right_program,
+                            Some(task.id),
+                            Some(task.scope_root),
+                            trace,
+                        )?;
+                        let mut current = self.snapshot.tasks[slot].expect("task must exist");
+                        current.wait = WaitReason::RaceOrTicks { left, right, until_tick };
+                        self.snapshot.tasks[slot] = Some(current);
+                        trace.on_event(TraceEvent::TaskWaiting {
+                            task: current.id,
+                            reason: current.wait,
+                        });
+                        progress = true;
+                        break;
+                    }
+                }
+                crate::program::Op::RaceChildrenOrTicks(left_program, right_program, ticks) => {
+                    if ticks == 0 {
+                        task.ip += 1;
+                        self.snapshot.tasks[slot] = Some(task);
+                        progress = true;
+                        continue;
+                    }
+                    if self.available_slots() < 2 {
+                        return Err(RuntimeError::CapacityExceeded);
+                    }
+                    task.ip += 1;
+                    self.snapshot.tasks[slot] = Some(task);
+                    let left =
+                        self.spawn_task(left_program, Some(task.id), Some(task.scope_root), trace)?;
+                    let right = self.spawn_task(
+                        right_program,
+                        Some(task.id),
+                        Some(task.scope_root),
+                        trace,
+                    )?;
+                    let mut current = self.snapshot.tasks[slot].expect("task must exist");
+                    current.wait = WaitReason::RaceOrTicks {
+                        left,
+                        right,
+                        until_tick: self.snapshot.clock.saturating_add(u64::from(ticks)),
+                    };
+                    self.snapshot.tasks[slot] = Some(current);
+                    trace.on_event(TraceEvent::TaskWaiting {
+                        task: current.id,
+                        reason: current.wait,
+                    });
+                    progress = true;
+                    break;
+                }
+                crate::program::Op::TimeoutTicks(ticks, program_id) => {
+                    task.ip += 1;
+                    if ticks == 0 {
+                        self.snapshot.tasks[slot] = Some(task);
+                        progress = true;
+                    } else {
+                        self.snapshot.tasks[slot] = Some(task);
+                        let child = self.spawn_task(
+                            program_id,
+                            Some(task.id),
+                            Some(task.scope_root),
+                            trace,
+                        )?;
+                        let mut current = self.snapshot.tasks[slot].expect("task must exist");
+                        current.wait = WaitReason::Timeout {
+                            child,
+                            until_tick: self.snapshot.clock.saturating_add(u64::from(ticks)),
+                        };
+                        self.snapshot.tasks[slot] = Some(current);
+                        trace.on_event(TraceEvent::TaskWaiting {
+                            task: current.id,
+                            reason: current.wait,
+                        });
+                        progress = true;
+                        break;
+                    }
+                }
                 crate::program::Op::WaitTicks(ticks) => {
                     task.ip += 1;
                     task.wait = WaitReason::Ticks {
+                        until_tick: self.snapshot.clock.saturating_add(u64::from(ticks)),
+                    };
+                    self.snapshot.tasks[slot] = Some(task);
+                    trace.on_event(TraceEvent::TaskWaiting { task: task.id, reason: task.wait });
+                    progress = true;
+                    break;
+                }
+                crate::program::Op::WaitSignalOrTicks(signal, ticks) => {
+                    task.ip += 1;
+                    task.wait = WaitReason::SignalOrTicks {
+                        signal,
                         until_tick: self.snapshot.clock.saturating_add(u64::from(ticks)),
                     };
                     self.snapshot.tasks[slot] = Some(task);
@@ -271,6 +508,27 @@ impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
                         self.spawn_task(program_id, Some(task.id), Some(task.scope_root), trace)?;
                     progress = true;
                 }
+                crate::program::Op::BranchPredicate(predicate, if_true, if_false) => {
+                    task.ip += 1;
+                    self.snapshot.tasks[slot] = Some(task);
+                    let chosen_program =
+                        if host.query_ready(predicate) { if_true } else { if_false };
+                    let _ = self.spawn_task(
+                        chosen_program,
+                        Some(task.id),
+                        Some(task.scope_root),
+                        trace,
+                    )?;
+                    let mut current = self.snapshot.tasks[slot].expect("task must exist");
+                    current.wait = WaitReason::ChildrenAll;
+                    self.snapshot.tasks[slot] = Some(current);
+                    trace.on_event(TraceEvent::TaskWaiting {
+                        task: current.id,
+                        reason: current.wait,
+                    });
+                    progress = true;
+                    break;
+                }
                 crate::program::Op::JoinChildren => {
                     task.ip += 1;
                     if self.has_running_children(task.id) {
@@ -283,6 +541,21 @@ impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
                     }
                     progress = true;
                     if self.has_running_children(task.id) {
+                        break;
+                    }
+                }
+                crate::program::Op::JoinAnyChildren => {
+                    task.ip += 1;
+                    if self.has_running_children(task.id) && !self.has_completed_children(task.id) {
+                        task.wait = WaitReason::ChildrenAny;
+                    }
+                    self.snapshot.tasks[slot] = Some(task);
+                    if task.wait == WaitReason::ChildrenAny {
+                        trace
+                            .on_event(TraceEvent::TaskWaiting { task: task.id, reason: task.wait });
+                    }
+                    progress = true;
+                    if task.wait == WaitReason::ChildrenAny {
                         break;
                     }
                 }
@@ -338,16 +611,50 @@ impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
             return false;
         };
 
-        if task.outcome != Outcome::Running {
+        if task.outcome != Outcome::Running || !host.is_mind_active(task.mind_id) {
             return false;
         }
 
         let ready = match task.wait {
             WaitReason::Ready => false,
             WaitReason::Ticks { until_tick } => self.snapshot.clock >= until_tick,
+            WaitReason::SignalOrTicks { signal, until_tick } => {
+                self.signal_pending(signal) || self.snapshot.clock >= until_tick
+            }
             WaitReason::Signal(signal) => self.signal_pending(signal),
             WaitReason::Predicate(predicate) => host.query_ready(predicate),
+            WaitReason::RaceOrTicks { left, right, until_tick } => {
+                if self.task_outcome(left) != Outcome::Running {
+                    self.cancel_if_running(right, trace);
+                    true
+                } else if self.task_outcome(right) != Outcome::Running {
+                    self.cancel_if_running(left, trace);
+                    true
+                } else if self.snapshot.clock >= until_tick {
+                    self.cancel_if_running(left, trace);
+                    self.cancel_if_running(right, trace);
+                    true
+                } else {
+                    false
+                }
+            }
+            WaitReason::Timeout { child, until_tick } => {
+                let child_outcome = self.task_outcome(child);
+                if child_outcome != Outcome::Running {
+                    true
+                } else if self.snapshot.clock >= until_tick {
+                    self.cancel_if_running(child, trace);
+                    true
+                } else {
+                    false
+                }
+            }
+            WaitReason::RepeatUntilPredicate { predicate, resume_at_tick } => {
+                !self.has_running_children(task.id)
+                    && (host.query_ready(predicate) || self.snapshot.clock >= resume_at_tick)
+            }
             WaitReason::ChildrenAll => !self.has_running_children(task.id),
+            WaitReason::ChildrenAny => self.has_completed_children(task.id),
             WaitReason::Race { left, right } => {
                 if self.task_outcome(left) != Outcome::Running {
                     self.cancel_if_running(right, trace);
@@ -363,6 +670,11 @@ impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
 
         if ready {
             let reason = task.wait;
+            if let WaitReason::RepeatUntilPredicate { predicate, .. } = reason {
+                if host.query_ready(predicate) {
+                    task.ip += 1;
+                }
+            }
             task.wait = WaitReason::Ready;
             self.snapshot.tasks[slot] = Some(task);
             trace.on_event(TraceEvent::TaskWoken { task: task.id, reason });
@@ -390,10 +702,14 @@ impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
         self.snapshot.next_task_id = self.snapshot.next_task_id.saturating_add(1);
         let id = TaskId(self.snapshot.next_task_id);
         let root = scope_root.unwrap_or(id);
+        let mind_id = parent
+            .and_then(|parent_id| self.task(parent_id).map(|task| task.mind_id))
+            .unwrap_or(Self::PRIMARY_MIND);
 
         self.snapshot.tasks[slot] = Some(TaskRecord {
             id,
             program_id,
+            mind_id,
             ip: 0,
             parent,
             scope_root: root,
@@ -480,6 +796,19 @@ impl<'a, const MAX_TASKS: usize, const MAX_PENDING_SIGNALS: usize>
         while index < MAX_TASKS {
             if let Some(task) = self.snapshot.tasks[index] {
                 if task.parent == Some(parent_id) && task.outcome == Outcome::Running {
+                    return true;
+                }
+            }
+            index += 1;
+        }
+        false
+    }
+
+    fn has_completed_children(&self, parent_id: TaskId) -> bool {
+        let mut index = 0usize;
+        while index < MAX_TASKS {
+            if let Some(task) = self.snapshot.tasks[index] {
+                if task.parent == Some(parent_id) && task.outcome != Outcome::Running {
                     return true;
                 }
             }

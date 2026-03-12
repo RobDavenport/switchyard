@@ -155,14 +155,24 @@ h2 {
 
 .button-row,
 .snapshot-actions,
-.button-grid {
+.button-grid,
+.preset-strip {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
 }
 
-.button-grid {
+.button-grid,
+.preset-strip {
   margin-top: 0.45rem;
+}
+
+.preset-strip button {
+  min-width: 10rem;
+}
+
+#mind-buttons button {
+  min-width: 8.5rem;
 }
 
 button {
@@ -190,6 +200,15 @@ button.active {
   margin-top: 1rem;
 }
 
+.mind-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.45rem;
+}
+
 .toggle {
   display: flex;
   align-items: center;
@@ -197,15 +216,179 @@ button.active {
   margin: 1rem 0;
 }
 
+.editor-block {
+  margin-top: 1rem;
+}
+
+.editor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+  margin-bottom: 0.7rem;
+}
+
+.editor-copy {
+  color: var(--muted);
+  margin: 0.3rem 0 0;
+  font-size: 0.92rem;
+}
+
 #snapshot-box {
   width: 100%;
-  min-height: 13rem;
-  margin-top: 0.8rem;
   border-radius: 1rem;
   border: 1px solid var(--line);
   padding: 0.9rem;
   resize: vertical;
   background: rgba(255, 255, 255, 0.74);
+}
+
+#snapshot-box {
+  min-height: 11rem;
+}
+
+#cli-export-box {
+  width: 100%;
+  min-height: 10rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  padding: 0.9rem;
+  resize: vertical;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.command-box {
+  margin: 0.75rem 0 0;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  padding: 0.9rem;
+  background: rgba(255, 248, 239, 0.82);
+  white-space: pre-wrap;
+}
+
+.program-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.program-card {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 0.9rem;
+}
+
+.program-header,
+.program-footer,
+.row-actions,
+.operand-fields {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.program-header,
+.program-footer {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.program-title {
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.field-row {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 0.8rem;
+}
+
+.field-label {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field-row input,
+.field-row select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: #fffdf8;
+  padding: 0.68rem 0.8rem;
+  font-family: var(--mono);
+}
+
+.op-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.op-row {
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+  background: rgba(255, 248, 239, 0.82);
+}
+
+.op-kind {
+  margin-top: 0;
+}
+
+.operand-fields {
+  flex-wrap: wrap;
+  margin-top: 0.7rem;
+}
+
+.operand-row {
+  flex: 1 1 9rem;
+  margin-top: 0;
+}
+
+.operand-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(20, 17, 15, 0.06);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.row-actions {
+  flex-wrap: wrap;
+  margin-top: 0.7rem;
+}
+
+.micro-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+
+.advanced-json {
+  margin-top: 0.9rem;
+}
+
+.advanced-json summary {
+  cursor: pointer;
+  font-family: var(--mono);
+  color: var(--muted);
+}
+
+#script-box {
+  width: 100%;
+  min-height: 11rem;
+  margin-top: 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  padding: 0.9rem;
+  resize: vertical;
+  background: rgba(255, 255, 255, 0.68);
 }
 
 .beats {
@@ -285,5 +468,15 @@ tr.cancelled td:first-child {
 
   .controls-panel {
     grid-row: auto;
+  }
+
+  .editor-header {
+    flex-direction: column;
+  }
+
+  .program-header,
+  .program-footer {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

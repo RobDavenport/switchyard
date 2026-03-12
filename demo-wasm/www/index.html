@@ -19,13 +19,18 @@
       <p class="eyebrow">switchyard browser showcase</p>
       <h1>The Death of Tick</h1>
       <p class="lede">
-        One encounter. No giant update loop. Step the runtime, fire signals, flip predicates,
-        save a snapshot, and watch structured behavior branch in public.
+        Three playable orchestration presets. No giant update loop. Step the runtime, fire signals,
+        flip predicates, edit the script live, save a snapshot, and watch structured behavior
+        branch in public.
       </p>
       <div class="hero-strip">
         <div>
+          <span class="label">Preset</span>
+          <strong id="preset-line">Death of Tick</strong>
+        </div>
+        <div>
           <span class="label">Beat</span>
-          <strong id="beat-line">Loading showcaseÅc</strong>
+          <strong id="beat-line">Loading showcase...</strong>
         </div>
         <div>
           <span class="label">Clock</span>
@@ -33,22 +38,33 @@
         </div>
         <div>
           <span class="label">WASM</span>
-          <strong id="wasm-status">LoadingÅc</strong>
+          <strong id="wasm-status">Loading...</strong>
         </div>
       </div>
     </header>
 
     <main class="layout">
       <section class="panel controls-panel">
-        <h2>Encounter Console</h2>
+        <h2>Runtime Console</h2>
         <p class="panel-copy">
-          Drive the scene the way a host would: explicit ticks, explicit signals, explicit
-          predicates.
+          Drive any preset the way a host would: explicit ticks, explicit signals, explicit
+          predicates, runtime-editable scripts, and deterministic save/restore.
         </p>
+        <div class="control-group">
+          <span class="label">Preset</span>
+          <div class="preset-strip">
+            <button id="preset-encounter-btn" type="button" class="active">Death of Tick</button>
+            <button id="preset-shootemup-btn" type="button">Shootemup Boss</button>
+            <button id="preset-multimind-btn" type="button">Mind the Gap</button>
+          </div>
+          <p id="preset-copy" class="small">
+            Start with the article-style encounter, or switch to a bullet-pattern boss phase.
+          </p>
+        </div>
         <div class="button-row">
           <button id="tick-btn" class="primary">Tick Once</button>
           <button id="auto-btn">Auto Tick</button>
-          <button id="reset-btn">Reset Scene</button>
+          <button id="reset-btn">Reset Preset</button>
         </div>
         <div class="control-group">
           <span class="label">Signals</span>
@@ -58,23 +74,99 @@
             <button data-signal="3">Boss spotted</button>
             <button data-signal="4">Collapse triggered</button>
           </div>
+          <p id="signal-copy" class="small">
+            Signal labels adapt to the active preset so the same runtime surface can drive
+            encounter beats or boss-phase interrupts.
+          </p>
         </div>
         <div class="control-group">
           <label class="toggle">
             <input id="predicate-toggle" type="checkbox" />
-            <span>Boss vulnerable predicate</span>
+            <span id="predicate-label">Boss vulnerable predicate</span>
           </label>
         </div>
-        <div class="snapshot-actions">
-          <button id="save-btn">Save Snapshot</button>
-          <button id="restore-btn">Restore Snapshot</button>
+        <div class="control-group">
+          <span class="label">Mind</span>
+          <div class="mind-strip">
+            <strong id="mind-line">Mind 1</strong>
+            <div id="mind-buttons" class="button-row"></div>
+          </div>
         </div>
-        <textarea id="snapshot-box" spellcheck="false"></textarea>
+
+        <div class="editor-block">
+          <div class="editor-header">
+            <div>
+              <span class="label">Script</span>
+              <p class="editor-copy">
+                Edit the active preset catalog as structured programs and ops, apply it at runtime,
+                or restore the built-in scene for that preset.
+              </p>
+            </div>
+            <div class="snapshot-actions">
+              <button id="add-program-btn">Add Program</button>
+              <button id="apply-script-btn" class="primary">Apply Script</button>
+              <button id="reset-script-btn">Reset Script</button>
+            </div>
+          </div>
+          <div id="script-programs" class="program-list"></div>
+          <details class="advanced-json">
+            <summary>Advanced JSON</summary>
+            <textarea id="script-box" spellcheck="false" readonly></textarea>
+          </details>
+        </div>
+
+        <div class="editor-block">
+          <div class="editor-header">
+            <div>
+              <span class="label">Snapshot</span>
+              <p class="editor-copy">
+                Save a running moment, then restore it after changing your decision path or
+                returning to a prior bullet pattern.
+              </p>
+            </div>
+            <div class="snapshot-actions">
+              <button id="save-btn">Save Snapshot</button>
+              <button id="restore-btn">Restore Snapshot</button>
+            </div>
+          </div>
+          <textarea id="snapshot-box" spellcheck="false"></textarea>
+        </div>
+
+        <div class="editor-block">
+          <div class="editor-header">
+            <div>
+              <span class="label">CLI Handoff</span>
+              <p class="editor-copy">
+                Export the current catalog and runtime snapshot in the same CLI-compatible shapes
+                that `switchyard-cli` already validates and summarizes, including
+                `switchyard-cli snapshot-check &lt;catalog&gt; &lt;snapshot&gt;`.
+              </p>
+            </div>
+            <div class="snapshot-actions">
+              <button id="copy-catalog-cli-btn" type="button">Copy Catalog</button>
+              <button id="download-catalog-cli-btn" type="button">Download Catalog</button>
+              <button id="copy-snapshot-cli-btn" type="button" disabled>Copy Snapshot</button>
+              <button id="download-snapshot-cli-btn" type="button" disabled>
+                Download Snapshot
+              </button>
+            </div>
+          </div>
+          <textarea id="cli-export-box" spellcheck="false" readonly></textarea>
+          <pre id="cli-command-box" class="command-box">switchyard-cli catalog-check &lt;catalog.json&gt;
+switchyard-cli catalog-summary &lt;catalog.json&gt;
+switchyard-cli snapshot-check &lt;catalog.json&gt; &lt;runtime-snapshot.json&gt;</pre>
+          <p id="cli-export-hint" class="small">
+            Export the current authoring document and runtime state, then feed the pair straight
+            into `switchyard-cli`, including `snapshot-check` for catalog-versus-snapshot
+            validation.
+          </p>
+        </div>
+
         <p id="snapshot-hint" class="small"></p>
       </section>
 
       <section class="panel stage-panel">
-        <h2>Story Beats</h2>
+        <h2>Action Timeline</h2>
         <div class="beats" id="action-log"></div>
       </section>
 
@@ -86,6 +178,7 @@
               <tr>
                 <th>Task</th>
                 <th>Program</th>
+                <th>Mind</th>
                 <th>Outcome</th>
                 <th>Wait</th>
               </tr>

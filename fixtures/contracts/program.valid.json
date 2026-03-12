@@ -4,11 +4,89 @@
       "id": 1,
       "ops": [
         {
+          "op": "repeat_count",
+          "count": 2,
+          "program": 2
+        },
+        {
+          "op": "call",
+          "call": 1,
+          "arg0": 3,
+          "arg1": 120,
+          "arg2": 64,
+          "arg3": 9
+        },
+        {
+          "op": "change_mind",
+          "mind": 2
+        },
+        {
+          "op": "repeat_until_predicate",
+          "predicate": 5,
+          "program": 2
+        },
+        {
+          "op": "wait_until_tick",
+          "until_tick": 12
+        },
+        {
+          "op": "wait_signal_until_tick",
+          "signal": 7,
+          "until_tick": 14
+        },
+        {
+          "op": "timeout_until_tick",
+          "until_tick": 15,
+          "program": 2
+        },
+        {
+          "op": "race_children_until_tick",
+          "left": 2,
+          "right": 3,
+          "until_tick": 16
+        },
+        {
+          "op": "race_children_or_ticks",
+          "left": 2,
+          "right": 3,
+          "ticks": 2
+        },
+        {
+          "op": "timeout_ticks",
+          "ticks": 2,
+          "program": 2
+        },
+        {
+          "op": "wait_signal_or_ticks",
+          "signal": 7,
+          "ticks": 2
+        },
+        {
+          "op": "sync_children",
+          "left": 2,
+          "right": 3
+        },
+        {
           "op": "spawn",
           "program": 2
         },
         {
-          "op": "join_children"
+          "op": "spawn",
+          "program": 3
+        },
+        {
+          "op": "join_any_children"
+        },
+        {
+          "op": "race_children",
+          "left": 2,
+          "right": 3
+        },
+        {
+          "op": "branch_predicate",
+          "predicate": 5,
+          "if_true": 2,
+          "if_false": 3
         },
         {
           "op": "action",
@@ -23,12 +101,20 @@
       "id": 2,
       "ops": [
         {
-          "op": "wait_signal",
-          "signal": 7
-        },
-        {
           "op": "action",
           "action": 1
+        },
+        {
+          "op": "succeed"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "ops": [
+        {
+          "op": "action",
+          "action": 2
         },
         {
           "op": "succeed"

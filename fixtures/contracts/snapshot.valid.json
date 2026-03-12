@@ -1,16 +1,32 @@
 {
   "clock": 3,
-  "next_task_id": 2,
+  "next_task_id": 3,
   "pending_signals": [
     null,
-    7
+    null
   ],
   "tasks": [
     {
       "id": 1,
-      "program_id": 2,
+      "program_id": 1,
+      "mind_id": 1,
       "ip": 1,
       "parent": null,
+      "scope_root": 1,
+      "outcome": "running",
+      "wait": {
+        "kind": "race_or_ticks",
+        "left": 2,
+        "right": 3,
+        "until_tick": 5
+      }
+    },
+    {
+      "id": 2,
+      "program_id": 2,
+      "mind_id": 1,
+      "ip": 1,
+      "parent": 1,
       "scope_root": 1,
       "outcome": "running",
       "wait": {
@@ -18,6 +34,18 @@
         "signal": 7
       }
     },
-    null
+    {
+      "id": 3,
+      "program_id": 3,
+      "mind_id": 1,
+      "ip": 1,
+      "parent": 1,
+      "scope_root": 1,
+      "outcome": "running",
+      "wait": {
+        "kind": "signal",
+        "signal": 8
+      }
+    }
   ]
 }

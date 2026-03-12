@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/switchyard-core", "crates/switchyard-debug", "demo-wasm"]
+members = ["crates/switchyard-cli", "crates/switchyard-core", "crates/switchyard-debug", "demo-wasm"]
 resolver = "2"
 
 [workspace.package]

@@ -1,16 +1,41 @@
-use crate::ids::{ActionId, PredicateId, ProgramId, SignalId};
+use crate::ids::{ActionId, HostCallId, MindId, PredicateId, ProgramId, SignalId};
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct HostCall {
+    pub id: HostCallId,
+    pub args: [i32; 4],
+}
+
+impl HostCall {
+    pub const fn new(id: HostCallId, args: [i32; 4]) -> Self {
+        Self { id, args }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Op {
     Action(ActionId),
+    Call(HostCall),
+    ChangeMind(MindId),
+    RepeatUntilPredicate(PredicateId, ProgramId),
+    WaitUntilTick(u64),
+    WaitSignalUntilTick(SignalId, u64),
+    TimeoutUntilTick(u64, ProgramId),
+    RaceChildrenUntilTick(ProgramId, ProgramId, u64),
+    RaceChildrenOrTicks(ProgramId, ProgramId, u32),
+    TimeoutTicks(u32, ProgramId),
+    WaitSignalOrTicks(SignalId, u32),
     WaitTicks(u32),
     WaitSignal(SignalId),
     WaitPredicate(PredicateId),
     Spawn(ProgramId),
+    BranchPredicate(PredicateId, ProgramId, ProgramId),
     JoinChildren,
+    JoinAnyChildren,
     Race2(ProgramId, ProgramId),
     Succeed,
     Fail,
@@ -61,6 +86,76 @@ impl<const CAPACITY: usize> ProgramBuilder<CAPACITY> {
         self.push(Op::Action(action))
     }
 
+    pub fn call(&mut self, call_id: HostCallId, args: [i32; 4]) -> Result<&mut Self, BuildError> {
+        self.push(Op::Call(HostCall::new(call_id, args)))
+    }
+
+    pub fn change_mind(&mut self, mind_id: MindId) -> Result<&mut Self, BuildError> {
+        self.push(Op::ChangeMind(mind_id))
+    }
+
+    pub fn repeat_until_predicate(
+        &mut self,
+        predicate: PredicateId,
+        program_id: ProgramId,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::RepeatUntilPredicate(predicate, program_id))
+    }
+
+    pub fn wait_until_tick(&mut self, until_tick: u64) -> Result<&mut Self, BuildError> {
+        self.push(Op::WaitUntilTick(until_tick))
+    }
+
+    pub fn wait_signal_until_tick(
+        &mut self,
+        signal: SignalId,
+        until_tick: u64,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::WaitSignalUntilTick(signal, until_tick))
+    }
+
+    pub fn timeout_until_tick(
+        &mut self,
+        until_tick: u64,
+        program_id: ProgramId,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::TimeoutUntilTick(until_tick, program_id))
+    }
+
+    pub fn race_children_until_tick(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+        until_tick: u64,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::RaceChildrenUntilTick(left_program, right_program, until_tick))
+    }
+
+    pub fn race_children_or_ticks(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+        ticks: u32,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::RaceChildrenOrTicks(left_program, right_program, ticks))
+    }
+
+    pub fn timeout_ticks(
+        &mut self,
+        ticks: u32,
+        program_id: ProgramId,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::TimeoutTicks(ticks, program_id))
+    }
+
+    pub fn wait_signal_or_ticks(
+        &mut self,
+        signal: SignalId,
+        ticks: u32,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::WaitSignalOrTicks(signal, ticks))
+    }
+
     pub fn wait_ticks(&mut self, ticks: u32) -> Result<&mut Self, BuildError> {
         self.push(Op::WaitTicks(ticks))
     }
@@ -77,8 +172,45 @@ impl<const CAPACITY: usize> ProgramBuilder<CAPACITY> {
         self.push(Op::Spawn(program_id))
     }
 
+    pub fn branch_predicate(
+        &mut self,
+        predicate: PredicateId,
+        if_true: ProgramId,
+        if_false: ProgramId,
+    ) -> Result<&mut Self, BuildError> {
+        self.push(Op::BranchPredicate(predicate, if_true, if_false))
+    }
+
+    pub fn repeat_count(
+        &mut self,
+        count: u32,
+        program_id: ProgramId,
+    ) -> Result<&mut Self, BuildError> {
+        let mut remaining = 0u32;
+        while remaining < count {
+            self.spawn(program_id)?;
+            self.join_children()?;
+            remaining += 1;
+        }
+        Ok(self)
+    }
+
+    pub fn sync_children(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+    ) -> Result<&mut Self, BuildError> {
+        self.spawn(left_program)?;
+        self.spawn(right_program)?;
+        self.join_children()
+    }
+
     pub fn join_children(&mut self) -> Result<&mut Self, BuildError> {
         self.push(Op::JoinChildren)
+    }
+
+    pub fn join_any_children(&mut self) -> Result<&mut Self, BuildError> {
+        self.push(Op::JoinAnyChildren)
     }
 
     pub fn race2(
@@ -87,6 +219,14 @@ impl<const CAPACITY: usize> ProgramBuilder<CAPACITY> {
         right_program: ProgramId,
     ) -> Result<&mut Self, BuildError> {
         self.push(Op::Race2(left_program, right_program))
+    }
+
+    pub fn race_children(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+    ) -> Result<&mut Self, BuildError> {
+        self.race2(left_program, right_program)
     }
 
     pub fn succeed(&mut self) -> Result<&mut Self, BuildError> {
@@ -138,6 +278,60 @@ impl OwnedProgram {
         self.push(Op::Action(action))
     }
 
+    pub fn call(&mut self, call_id: HostCallId, args: [i32; 4]) -> &mut Self {
+        self.push(Op::Call(HostCall::new(call_id, args)))
+    }
+
+    pub fn change_mind(&mut self, mind_id: MindId) -> &mut Self {
+        self.push(Op::ChangeMind(mind_id))
+    }
+
+    pub fn repeat_until_predicate(
+        &mut self,
+        predicate: PredicateId,
+        program_id: ProgramId,
+    ) -> &mut Self {
+        self.push(Op::RepeatUntilPredicate(predicate, program_id))
+    }
+
+    pub fn wait_until_tick(&mut self, until_tick: u64) -> &mut Self {
+        self.push(Op::WaitUntilTick(until_tick))
+    }
+
+    pub fn wait_signal_until_tick(&mut self, signal: SignalId, until_tick: u64) -> &mut Self {
+        self.push(Op::WaitSignalUntilTick(signal, until_tick))
+    }
+
+    pub fn timeout_until_tick(&mut self, until_tick: u64, program_id: ProgramId) -> &mut Self {
+        self.push(Op::TimeoutUntilTick(until_tick, program_id))
+    }
+
+    pub fn race_children_until_tick(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+        until_tick: u64,
+    ) -> &mut Self {
+        self.push(Op::RaceChildrenUntilTick(left_program, right_program, until_tick))
+    }
+
+    pub fn race_children_or_ticks(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+        ticks: u32,
+    ) -> &mut Self {
+        self.push(Op::RaceChildrenOrTicks(left_program, right_program, ticks))
+    }
+
+    pub fn timeout_ticks(&mut self, ticks: u32, program_id: ProgramId) -> &mut Self {
+        self.push(Op::TimeoutTicks(ticks, program_id))
+    }
+
+    pub fn wait_signal_or_ticks(&mut self, signal: SignalId, ticks: u32) -> &mut Self {
+        self.push(Op::WaitSignalOrTicks(signal, ticks))
+    }
+
     pub fn wait_ticks(&mut self, ticks: u32) -> &mut Self {
         self.push(Op::WaitTicks(ticks))
     }
@@ -154,12 +348,50 @@ impl OwnedProgram {
         self.push(Op::Spawn(program_id))
     }
 
+    pub fn branch_predicate(
+        &mut self,
+        predicate: PredicateId,
+        if_true: ProgramId,
+        if_false: ProgramId,
+    ) -> &mut Self {
+        self.push(Op::BranchPredicate(predicate, if_true, if_false))
+    }
+
+    pub fn repeat_count(&mut self, count: u32, program_id: ProgramId) -> &mut Self {
+        let mut remaining = 0u32;
+        while remaining < count {
+            self.spawn(program_id).join_children();
+            remaining += 1;
+        }
+        self
+    }
+
+    pub fn sync_children(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+    ) -> &mut Self {
+        self.spawn(left_program).spawn(right_program).join_children()
+    }
+
     pub fn join_children(&mut self) -> &mut Self {
         self.push(Op::JoinChildren)
     }
 
+    pub fn join_any_children(&mut self) -> &mut Self {
+        self.push(Op::JoinAnyChildren)
+    }
+
     pub fn race2(&mut self, left_program: ProgramId, right_program: ProgramId) -> &mut Self {
         self.push(Op::Race2(left_program, right_program))
+    }
+
+    pub fn race_children(
+        &mut self,
+        left_program: ProgramId,
+        right_program: ProgramId,
+    ) -> &mut Self {
+        self.race2(left_program, right_program)
     }
 
     pub fn succeed(&mut self) -> &mut Self {
