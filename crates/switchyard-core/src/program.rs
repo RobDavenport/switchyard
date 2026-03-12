@@ -2,6 +2,7 @@ use crate::ids::{ActionId, PredicateId, ProgramId, SignalId};
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Op {
     Action(ActionId),
@@ -15,11 +16,13 @@ pub enum Op {
     Fail,
 }
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BuildError {
     CapacityExceeded,
 }
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[derive(Clone, Copy, Debug)]
 pub struct Program<'a> {
     pub id: ProgramId,
@@ -100,6 +103,7 @@ impl<const CAPACITY: usize> ProgramBuilder<CAPACITY> {
 }
 
 #[cfg(feature = "alloc")]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct OwnedProgram {
     id: ProgramId,

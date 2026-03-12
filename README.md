@@ -1,143 +1,105 @@
-    # switchyard
+# switchyard
 
-    Deterministic, no_std structured-concurrency behavior runtime for game logic and orchestration.
+Deterministic, `no_std` structured-concurrency behavior runtime for game logic and orchestration.
 
-    ## Project purpose
+## Project purpose
 
-    Long-lived gameplay behavior is painful to express as scattered tick code, callback chains, and ad hoc state machines. Teams need a game-first orchestration layer without adopting a full framework or embedding a heavyweight scripting language.
+Long-lived gameplay behavior is painful to express as scattered tick code, callback chains, and ad hoc state machines. `switchyard` provides a small, deterministic runtime for durational behavior, structured concurrency, inspection, tracing, and save/load-friendly execution state without imposing a framework.
 
-    switchyard exists to provide a small, deterministic runtime for durational behavior, structured concurrency, inspection, and save/load-friendly execution state while staying reusable across engines, runtimes, and architectural styles.
+## Delivery mode
 
-    ## Users
+This repo now contains a working walking skeleton with a browser showcase. The core runtime, authoring helpers, contracts, trace hooks, debug tooling, CI checks, GitHub Pages showcase, and agent workflow loop are implemented and test-backed.
 
-    Engine authors, gameplay programmers, simulation developers, custom runtime builders, and wasm-hosted game teams.
+## Workspace layout
 
-    ## Delivery mode
+- `crates/switchyard-core`: deterministic runtime, snapshots, trace events, and authoring helpers
+- `crates/switchyard-debug`: trace log sink and rendering helpers built on top of `switchyard-core`
+- `demo-wasm`: browser showcase inspired by �gthe death of tick�h, including snapshots and trace playback
+- `contracts/`: versioned JSON Schema boundary contracts
+- `fixtures/`: valid and invalid contract examples
+- `docs/`: product, architecture, quality, and release guidance
+- `codex/`: runbook, prompt pack, and taskboard
+- `scripts/`: deterministic helper scripts, including the prompt-pack loop runner
 
-    **scaffold + walking skeleton**
+## Prerequisites
 
-    This repository is intentionally narrow. It ships a compileable workspace, a working skeleton in code, boundary contracts, starter tests, CI wiring, and an agent execution pack. It does **not** claim the full product is complete.
+- Rust stable with `clippy` and `rustfmt`
+- Python 3.11+
+- `wasm-pack` for the browser showcase
+- Standard POSIX shell environment for the `Makefile`
 
-    ## Repo layout
+## Common commands
 
-    ```text
-    switchyard-ready-monorepo
-├── .editorconfig
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── .gitignore
-├── AGENTS.md
-├── Cargo.toml
-├── LICENSE
-├── MASTER_SPEC.md
-├── Makefile
-├── README.md
-├── clippy.toml
-├── codex/
-│   ├── 00-OVERNIGHT-RUNBOOK.md
-│   ├── ENVIRONMENT-NOTES.md
-│   ├── prompts/
-│   │   ├── 00-LAUNCH-THIS-REPO.md
-│   │   ├── 01-REPO-AND-TOOLING.md
-│   │   ├── 02-CONTRACTS-AND-SCHEMAS.md
-│   │   ├── 03-CORE-DOMAIN.md
-│   │   ├── 04-APIS-OR-PLUGIN-LAYER.md
-│   │   ├── 05-TESTS-AND-VALIDATION.md
-│   │   ├── 06-CI-LINT-AND-RELEASE.md
-│   │   └── 07-DOCS-FINAL-AUDIT.md
-│   └── taskboard.yaml
-├── contracts/
-│   ├── behavior-program.schema.json
-│   └── runtime-snapshot.schema.json
-├── crates/
-│   └── switchyard-core/
-│       ├── Cargo.toml
-│       ├── examples/
-│       │   └── cutscene.rs
-│       ├── src/
-│       │   ├── ids.rs
-│       │   ├── lib.rs
-│       │   ├── program.rs
-│       │   ├── runtime.rs
-│       │   └── snapshot.rs
-│       └── tests/
-│           └── smoke.rs
-├── docs/
-│   ├── 01-PRD.md
-│   ├── 02-TECHNICAL-ARCHITECTURE.md
-│   ├── 03-WBS-AND-MILESTONES.md
-│   ├── 04-TDD-QUALITY-GATES.md
-│   ├── 05-ACCEPTANCE-TEST-MATRIX.md
-│   ├── 06-RISK-REGISTER.md
-│   └── 07-REPO-BLUEPRINT.md
-├── fixtures/
-│   └── contracts/
-│       ├── program.invalid.json
-│       ├── program.valid.json
-│       ├── snapshot.invalid.json
-│       └── snapshot.valid.json
-├── rust-toolchain.toml
-├── rustfmt.toml
-└── scripts/
-    └── validate_contract_fixtures.py
-    ```
+```bash
+make fmt
+make lint
+make test
+make test-no-default
+make docs
+make runpack
+make showcase-wasm
+make ci
+```
 
-    ## Prerequisites
+`make runpack` resolves the current prompt-pack loop from `codex/taskboard.yaml`.
 
-    - Rust stable toolchain with `clippy` and `rustfmt`
-    - Python 3.11+ for contract-fixture validation scripts
-    - Standard POSIX shell environment for local automation
+## Browser showcase
 
-    ## Setup commands
+The repo includes a browser demo in `demo-wasm/` that stages a branching encounter with:
 
-    ```bash
-    git clone <your-fork-url> switchyard
-    cd switchyard
-    make bootstrap
-    make test
-    ```
+- explicit ticks
+- signal buttons
+- a predicate toggle
+- live task inspection
+- trace log playback
+- snapshot save/restore
 
-    ## Common commands
+Build the package and serve the static site locally:
 
-    ```bash
-    make fmt
-    make lint
-    make test
-    make test-no-default
-    make docs
-    ```
+```bash
+wasm-pack build demo-wasm --target web --release --out-dir www/pkg
+cd demo-wasm/www
+python -m http.server 8080
+```
 
-    ## Development workflow
+The GitHub Pages deployment workflow lives in `.github/workflows/pages.yml`.
 
-    1. Pick the next open item from `codex/taskboard.yaml`.
-    2. Write or extend a failing test first.
-    3. Implement the smallest change that turns the test green.
-    4. Refactor only after the behavior is locked by tests.
-    5. Re-run `make ci` before claiming completion.
-    6. Update the docs pack and taskboard when scope or status changes.
+## Agent workflow
 
-    ## How an agent should start
+1. Read `MASTER_SPEC.md` and `AGENTS.md`.
+2. Read `codex/00-OVERNIGHT-RUNBOOK.md`.
+3. Execute `codex/prompts/00-LAUNCH-THIS-REPO.md`.
+4. Run `python3 scripts/run_prompt_pack.py`.
+5. Move one coherent slice forward with Red -> Green -> Refactor.
+6. Update the taskboard and acceptance matrix.
+7. Re-run `python3 scripts/run_prompt_pack.py` until the taskboard is done.
 
-    1. Read `MASTER_SPEC.md`.
-    2. Read `AGENTS.md`.
-    3. Open `codex/00-OVERNIGHT-RUNBOOK.md`.
-    4. Execute `codex/prompts/00-LAUNCH-THIS-REPO.md`.
-    5. Continue through the numbered prompt pack without redoing finished work.
+## Implemented now
 
-    ## Preferred stack
+- Fixed-capacity deterministic scheduler with waits, signals, predicates, spawn, join, race, fail, and cancellation
+- Snapshot export/import and plain-data task inspection
+- Fixed-capacity `ProgramBuilder` for `no_std` authoring
+- Alloc-backed `OwnedProgram` for dynamic authoring when `alloc` is available
+- Optional `serde` feature for snapshot JSON round-trip and `OwnedProgram` export/import
+- Explicit `TraceEvent` / `TraceSink` runtime hooks
+- `switchyard-debug::TraceLog` for reusable event capture and rendering
+- Browser showcase for orchestrated encounter stepping and snapshot/trace inspection
+- Contract schemas, valid/invalid fixtures, CI, GitHub Pages deployment, and prompt-pack loop automation
 
-    Rust stable workspace, additive `std` feature wiring, no required third-party runtime dependencies.
+## Remaining expansion areas
 
-    ## What is scaffolded vs implemented
+- Richer authoring formats above op-by-op builders
+- More representative acceptance examples and sample integrations
 
-    Implemented now: workspace scaffold, `switchyard-core`, a functioning scheduler skeleton, snapshot model, contract schemas, fixture validation, CI, example, a fixed-capacity program builder API, explicit runtime trace hooks, and behavior tests for waits, join, race, predicates, restore-from-snapshot, authoring, and tracing.
+## Verification
 
-    Partially implemented: richer authoring surfaces beyond the fixed-capacity builder, higher-level debug tooling on top of trace events, more expressive routine formats, and optional serde-backed export/import.
+The repo is expected to stay green on:
 
-    ## Next milestones
-
-    1. Harden the scheduler edge cases and failure semantics.
-    2. Expand the program surface beyond the fixed-capacity builder with richer authoring helpers or a tiny assembler.
-    3. Add higher-level debug/trace tooling on top of the runtime event hooks and more representative acceptance examples.
-    4. Introduce optional serde integration only after the snapshot format is stable.
+```bash
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-features
+cargo check --workspace --lib --no-default-features
+python3 -m unittest scripts/test_run_prompt_pack.py
+python3 scripts/validate_contract_fixtures.py
+```

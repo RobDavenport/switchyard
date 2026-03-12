@@ -1,6 +1,7 @@
 use crate::ids::{ActionId, ProgramId, SignalId, TaskId};
 use crate::runtime::{Outcome, StepReport, WaitReason};
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TraceEvent {
     TickStarted { clock: u64 },

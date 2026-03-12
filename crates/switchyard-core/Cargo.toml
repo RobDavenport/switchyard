@@ -8,8 +8,14 @@ description = "Deterministic no_std structured-concurrency runtime walking skele
 [features]
 default = []
 alloc = []
-serde = []
+serde = ["dep:serde", "alloc"]
 std = ["alloc"]
+
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive"], optional = true }
+
+[dev-dependencies]
+serde_json = "1"
 
 [lib]
 name = "switchyard_core"

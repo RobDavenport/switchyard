@@ -12,9 +12,10 @@ Goal: confirm the repository is coherent, reproducible, and ready for iterative 
 Steps:
 1. Read `MASTER_SPEC.md`, `AGENTS.md`, and `docs/02-TECHNICAL-ARCHITECTURE.md`.
 2. Run the baseline verification commands.
-3. Summarize what is already implemented, what is scaffold-only, and the next highest-value gap.
-4. Pick exactly one work package slice and move it forward using TDD.
-5. Update the taskboard and acceptance matrix if any status changes.
+3. Run `python3 scripts/run_prompt_pack.py` to resolve the next prompt-loop sequence.
+4. Summarize what is already implemented, what is scaffold-only, and the next highest-value gap.
+5. Pick exactly one work package slice and move it forward using TDD.
+6. Update the taskboard and acceptance matrix if any status changes.
 
 Verification:
 - `cargo test --workspace --all-features`

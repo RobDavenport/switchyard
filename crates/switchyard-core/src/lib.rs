@@ -10,9 +10,9 @@ pub mod snapshot;
 pub mod trace;
 
 pub use ids::{ActionId, PredicateId, ProgramId, SignalId, TaskId};
-pub use program::{BuildError, Op, Program, ProgramBuilder, ProgramCatalog};
 #[cfg(feature = "alloc")]
 pub use program::OwnedProgram;
+pub use program::{BuildError, Op, Program, ProgramBuilder, ProgramCatalog};
 pub use runtime::{Host, Outcome, Runtime, RuntimeError, StepReport, TaskRecord, WaitReason};
 pub use snapshot::RuntimeSnapshot;
 pub use trace::{TraceEvent, TraceSink};

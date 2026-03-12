@@ -47,6 +47,12 @@ PROMPT_MAP = {
         "codex/prompts/05-TESTS-AND-VALIDATION.md",
         "codex/prompts/07-DOCS-FINAL-AUDIT.md",
     ],
+    "switchyard.browser-showcase": [
+        "codex/prompts/04-APIS-OR-PLUGIN-LAYER.md",
+        "codex/prompts/05-TESTS-AND-VALIDATION.md",
+        "codex/prompts/06-CI-LINT-AND-RELEASE.md",
+        "codex/prompts/07-DOCS-FINAL-AUDIT.md",
+    ],
     "switchyard.docs-and-release-hygiene": [
         "codex/prompts/01-REPO-AND-TOOLING.md",
         "codex/prompts/06-CI-LINT-AND-RELEASE.md",
@@ -159,3 +165,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

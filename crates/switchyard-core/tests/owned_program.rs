@@ -18,11 +18,7 @@ impl Host for TestHost {
 #[test]
 fn owned_program_authors_a_runnable_program() {
     let mut program = OwnedProgram::new(ProgramId(11));
-    program
-        .wait_signal(SignalId(4))
-        .action(ActionId(1))
-        .action(ActionId(2))
-        .succeed();
+    program.wait_signal(SignalId(4)).action(ActionId(1)).action(ActionId(2)).succeed();
 
     assert_eq!(
         program.ops(),

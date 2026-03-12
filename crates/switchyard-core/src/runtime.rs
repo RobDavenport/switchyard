@@ -3,6 +3,7 @@ use crate::program::ProgramCatalog;
 use crate::snapshot::RuntimeSnapshot;
 use crate::trace::{NoopTraceSink, TraceEvent, TraceSink};
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Outcome {
     Running,
@@ -11,6 +12,7 @@ pub enum Outcome {
     Cancelled,
 }
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum WaitReason {
     #[default]
@@ -27,6 +29,7 @@ pub enum WaitReason {
     },
 }
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TaskRecord {
     pub id: TaskId,
@@ -38,6 +41,7 @@ pub struct TaskRecord {
     pub wait: WaitReason,
 }
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct StepReport {
     pub clock: u64,

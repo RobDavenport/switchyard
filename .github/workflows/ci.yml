@@ -27,8 +27,11 @@ jobs:
       - name: Lint
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-      - name: Run tests
+      - name: Run Rust tests
         run: cargo test --workspace --all-features
+
+      - name: Run Python helper tests
+        run: python3 -m unittest scripts/test_run_prompt_pack.py
 
       - name: Check no-default-features build
         run: cargo check --workspace --lib --no-default-features

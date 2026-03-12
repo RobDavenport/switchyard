@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>switchyard | The Death of Tick</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;700&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+    <header class="hero">
+      <p class="eyebrow">switchyard browser showcase</p>
+      <h1>The Death of Tick</h1>
+      <p class="lede">
+        One encounter. No giant update loop. Step the runtime, fire signals, flip predicates,
+        save a snapshot, and watch structured behavior branch in public.
+      </p>
+      <div class="hero-strip">
+        <div>
+          <span class="label">Beat</span>
+          <strong id="beat-line">Loading showcaseÅc</strong>
+        </div>
+        <div>
+          <span class="label">Clock</span>
+          <strong id="clock-line">0</strong>
+        </div>
+        <div>
+          <span class="label">WASM</span>
+          <strong id="wasm-status">LoadingÅc</strong>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel controls-panel">
+        <h2>Encounter Console</h2>
+        <p class="panel-copy">
+          Drive the scene the way a host would: explicit ticks, explicit signals, explicit
+          predicates.
+        </p>
+        <div class="button-row">
+          <button id="tick-btn" class="primary">Tick Once</button>
+          <button id="auto-btn">Auto Tick</button>
+          <button id="reset-btn">Reset Scene</button>
+        </div>
+        <div class="control-group">
+          <span class="label">Signals</span>
+          <div class="button-grid">
+            <button data-signal="1">Player committed</button>
+            <button data-signal="2">Scouts ready</button>
+            <button data-signal="3">Boss spotted</button>
+            <button data-signal="4">Collapse triggered</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="toggle">
+            <input id="predicate-toggle" type="checkbox" />
+            <span>Boss vulnerable predicate</span>
+          </label>
+        </div>
+        <div class="snapshot-actions">
+          <button id="save-btn">Save Snapshot</button>
+          <button id="restore-btn">Restore Snapshot</button>
+        </div>
+        <textarea id="snapshot-box" spellcheck="false"></textarea>
+        <p id="snapshot-hint" class="small"></p>
+      </section>
+
+      <section class="panel stage-panel">
+        <h2>Story Beats</h2>
+        <div class="beats" id="action-log"></div>
+      </section>
+
+      <section class="panel task-panel">
+        <h2>Active Tasks</h2>
+        <div class="task-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Program</th>
+                <th>Outcome</th>
+                <th>Wait</th>
+              </tr>
+            </thead>
+            <tbody id="task-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel trace-panel">
+        <h2>Trace Log</h2>
+        <pre id="trace-log"></pre>
+      </section>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

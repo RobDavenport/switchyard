@@ -1,88 +1,106 @@
-        # 07-REPO-BLUEPRINT
+# 07-REPO-BLUEPRINT
 
-        ## Full repo tree
+## Full repo tree
 
-        ```text
-        switchyard-ready-monorepo
-â”œâ”€â”€ .editorconfig
-â”œâ”€â”€ .github/
-â”‚   â””â”€â”€ workflows/
-â”‚       â””â”€â”€ ci.yml
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ AGENTS.md
-â”œâ”€â”€ Cargo.toml
-â”œâ”€â”€ LICENSE
-â”œâ”€â”€ MASTER_SPEC.md
-â”œâ”€â”€ Makefile
-â”œâ”€â”€ README.md
-â”œâ”€â”€ clippy.toml
-â”œâ”€â”€ codex/
-â”‚   â”œâ”€â”€ 00-OVERNIGHT-RUNBOOK.md
-â”‚   â”œâ”€â”€ ENVIRONMENT-NOTES.md
-â”‚   â”œâ”€â”€ prompts/
-â”‚   â”‚   â”œâ”€â”€ 00-LAUNCH-THIS-REPO.md
-â”‚   â”‚   â”œâ”€â”€ 01-REPO-AND-TOOLING.md
-â”‚   â”‚   â”œâ”€â”€ 02-CONTRACTS-AND-SCHEMAS.md
-â”‚   â”‚   â”œâ”€â”€ 03-CORE-DOMAIN.md
-â”‚   â”‚   â”œâ”€â”€ 04-APIS-OR-PLUGIN-LAYER.md
-â”‚   â”‚   â”œâ”€â”€ 05-TESTS-AND-VALIDATION.md
-â”‚   â”‚   â”œâ”€â”€ 06-CI-LINT-AND-RELEASE.md
-â”‚   â”‚   â””â”€â”€ 07-DOCS-FINAL-AUDIT.md
-â”‚   â””â”€â”€ taskboard.yaml
-â”œâ”€â”€ contracts/
-â”‚   â”œâ”€â”€ behavior-program.schema.json
-â”‚   â””â”€â”€ runtime-snapshot.schema.json
-â”œâ”€â”€ crates/
-â”‚   â””â”€â”€ switchyard-core/
-â”‚       â”œâ”€â”€ Cargo.toml
-â”‚       â”œâ”€â”€ examples/
-â”‚       â”‚   â””â”€â”€ cutscene.rs
-â”‚       â”œâ”€â”€ src/
-â”‚       â”‚   â”œâ”€â”€ ids.rs
-â”‚       â”‚   â”œâ”€â”€ lib.rs
-â”‚       â”‚   â”œâ”€â”€ program.rs
-â”‚       â”‚   â”œâ”€â”€ runtime.rs
-â”‚       â”‚   â””â”€â”€ snapshot.rs
-â”‚       â””â”€â”€ tests/
-â”‚           â””â”€â”€ smoke.rs
-â”œâ”€â”€ docs/
-â”‚   â”œâ”€â”€ 01-PRD.md
-â”‚   â”œâ”€â”€ 02-TECHNICAL-ARCHITECTURE.md
-â”‚   â”œâ”€â”€ 03-WBS-AND-MILESTONES.md
-â”‚   â”œâ”€â”€ 04-TDD-QUALITY-GATES.md
-â”‚   â”œâ”€â”€ 05-ACCEPTANCE-TEST-MATRIX.md
-â”‚   â”œâ”€â”€ 06-RISK-REGISTER.md
-â”‚   â””â”€â”€ 07-REPO-BLUEPRINT.md
-â”œâ”€â”€ fixtures/
-â”‚   â””â”€â”€ contracts/
-â”‚       â”œâ”€â”€ program.invalid.json
-â”‚       â”œâ”€â”€ program.valid.json
-â”‚       â”œâ”€â”€ snapshot.invalid.json
-â”‚       â””â”€â”€ snapshot.valid.json
-â”œâ”€â”€ rust-toolchain.toml
-â”œâ”€â”€ rustfmt.toml
-â””â”€â”€ scripts/
-    â””â”€â”€ validate_contract_fixtures.py
-        ```
+```text
+switchyard/
+„¥„Ÿ„Ÿ .github/
+„    „¤„Ÿ„Ÿ workflows/
+„        „¥„Ÿ„Ÿ ci.yml
+„        „¤„Ÿ„Ÿ pages.yml
+„¥„Ÿ„Ÿ codex/
+„    „¥„Ÿ„Ÿ 00-OVERNIGHT-RUNBOOK.md
+„    „¥„Ÿ„Ÿ ENVIRONMENT-NOTES.md
+„    „¥„Ÿ„Ÿ prompts/
+„    „    „¥„Ÿ„Ÿ 00-LAUNCH-THIS-REPO.md
+„    „    „¥„Ÿ„Ÿ 01-REPO-AND-TOOLING.md
+„    „    „¥„Ÿ„Ÿ 02-CONTRACTS-AND-SCHEMAS.md
+„    „    „¥„Ÿ„Ÿ 03-CORE-DOMAIN.md
+„    „    „¥„Ÿ„Ÿ 04-APIS-OR-PLUGIN-LAYER.md
+„    „    „¥„Ÿ„Ÿ 05-TESTS-AND-VALIDATION.md
+„    „    „¥„Ÿ„Ÿ 06-CI-LINT-AND-RELEASE.md
+„    „    „¤„Ÿ„Ÿ 07-DOCS-FINAL-AUDIT.md
+„    „¤„Ÿ„Ÿ taskboard.yaml
+„¥„Ÿ„Ÿ contracts/
+„    „¥„Ÿ„Ÿ behavior-program.schema.json
+„    „¤„Ÿ„Ÿ runtime-snapshot.schema.json
+„¥„Ÿ„Ÿ crates/
+„    „¥„Ÿ„Ÿ switchyard-core/
+„    „    „¥„Ÿ„Ÿ examples/
+„    „    „    „¤„Ÿ„Ÿ cutscene.rs
+„    „    „¥„Ÿ„Ÿ src/
+„    „    „    „¥„Ÿ„Ÿ ids.rs
+„    „    „    „¥„Ÿ„Ÿ lib.rs
+„    „    „    „¥„Ÿ„Ÿ program.rs
+„    „    „    „¥„Ÿ„Ÿ runtime.rs
+„    „    „    „¥„Ÿ„Ÿ snapshot.rs
+„    „    „    „¤„Ÿ„Ÿ trace.rs
+„    „    „¤„Ÿ„Ÿ tests/
+„    „        „¥„Ÿ„Ÿ owned_program.rs
+„    „        „¥„Ÿ„Ÿ program_builder.rs
+„    „        „¥„Ÿ„Ÿ smoke.rs
+„    „        „¤„Ÿ„Ÿ trace.rs
+„    „¤„Ÿ„Ÿ switchyard-debug/
+„        „¥„Ÿ„Ÿ src/
+„        „    „¤„Ÿ„Ÿ lib.rs
+„        „¤„Ÿ„Ÿ tests/
+„            „¤„Ÿ„Ÿ trace_log.rs
+„¥„Ÿ„Ÿ demo-wasm/
+„    „¥„Ÿ„Ÿ src/
+„    „    „¤„Ÿ„Ÿ lib.rs
+„    „¥„Ÿ„Ÿ tests/
+„    „    „¤„Ÿ„Ÿ showcase.rs
+„    „¥„Ÿ„Ÿ www/
+„    „    „¥„Ÿ„Ÿ index.html
+„    „    „¥„Ÿ„Ÿ main.js
+„    „    „¤„Ÿ„Ÿ styles.css
+„    „¥„Ÿ„Ÿ Cargo.toml
+„    „¤„Ÿ„Ÿ README.md
+„¥„Ÿ„Ÿ docs/
+„    „¥„Ÿ„Ÿ 01-PRD.md
+„    „¥„Ÿ„Ÿ 02-TECHNICAL-ARCHITECTURE.md
+„    „¥„Ÿ„Ÿ 03-WBS-AND-MILESTONES.md
+„    „¥„Ÿ„Ÿ 04-TDD-QUALITY-GATES.md
+„    „¥„Ÿ„Ÿ 05-ACCEPTANCE-TEST-MATRIX.md
+„    „¥„Ÿ„Ÿ 06-RISK-REGISTER.md
+„    „¤„Ÿ„Ÿ 07-REPO-BLUEPRINT.md
+„¥„Ÿ„Ÿ fixtures/
+„    „¤„Ÿ„Ÿ contracts/
+„        „¥„Ÿ„Ÿ program.invalid.json
+„        „¥„Ÿ„Ÿ program.valid.json
+„        „¥„Ÿ„Ÿ snapshot.invalid.json
+„        „¤„Ÿ„Ÿ snapshot.valid.json
+„¥„Ÿ„Ÿ scripts/
+„    „¥„Ÿ„Ÿ run_prompt_pack.py
+„    „¥„Ÿ„Ÿ test_run_prompt_pack.py
+„    „¤„Ÿ„Ÿ validate_contract_fixtures.py
+„¥„Ÿ„Ÿ AGENTS.md
+„¥„Ÿ„Ÿ Cargo.toml
+„¥„Ÿ„Ÿ Makefile
+„¥„Ÿ„Ÿ MASTER_SPEC.md
+„¤„Ÿ„Ÿ README.md
+```
 
-        ## Top-level directory purposes
+## Top-level directory purposes
 
-        - `crates/`: production Rust workspace members
-        - `contracts/`: versioned external schemas and boundary documentation
-        - `fixtures/`: valid and invalid contract examples
-        - `docs/`: product, architecture, quality, and delivery guidance
-        - `codex/`: agent runbook, prompts, and task tracking
-        - `scripts/`: deterministic developer and CI helper scripts
-        - `.github/workflows/`: CI definitions
+- `crates/`: production Rust workspace members
+- `demo-wasm/`: browser showcase crate and static site assets
+- `contracts/`: versioned external schemas and boundary documentation
+- `fixtures/`: valid and invalid contract examples
+- `docs/`: product, architecture, quality, and delivery guidance
+- `codex/`: agent runbook, prompts, prompt-loop entry point, and task tracking
+- `scripts/`: deterministic helper scripts for contract validation and prompt-pack execution
+- `.github/workflows/`: CI and Pages deployment definitions
 
-        ## Naming conventions
+## Naming conventions
 
-        - Workspace members use the product prefix (`switchyard-*`) to keep ownership obvious.
-        - Contracts use kebab-case file names ending in `.schema.json`.
-        - Prompts are numbered so agents can resume from partial progress without re-planning the whole repo.
+- Workspace members use the `switchyard-*` prefix unless the crate is a purpose-built showcase app.
+- Contracts use kebab-case file names ending in `.schema.json`.
+- Prompt files are numbered to keep resumption deterministic.
+- Helper scripts stay deterministic and standard-library-only.
 
-        ## Future extension points
+## Future extension points
 
-        - Add new crates only when they own a stable boundary.
-        - Keep examples and fixtures aligned with real acceptance cases.
-        - Prefer sibling crates for optional tooling instead of bloating the core crate.
+- Add new crates only when they own a stable boundary.
+- Keep examples, fixtures, and the browser showcase aligned with real acceptance cases.
+- Prefer sibling crates for optional tooling instead of bloating the core runtime.

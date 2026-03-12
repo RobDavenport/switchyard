@@ -13,11 +13,14 @@ items:
     status: done
     depends_on: [switchyard.scheduler-core]
   - id: switchyard.authoring-surface
-    status: in_progress
+    status: done
     depends_on: [switchyard.scheduler-core]
   - id: switchyard.trace-and-debug-hooks
-    status: in_progress
+    status: done
     depends_on: [switchyard.persistence-and-inspection]
+  - id: switchyard.browser-showcase
+    status: done
+    depends_on: [switchyard.authoring-surface, switchyard.trace-and-debug-hooks]
   - id: switchyard.docs-and-release-hygiene
     status: done
     depends_on: [switchyard.bootstrap]
