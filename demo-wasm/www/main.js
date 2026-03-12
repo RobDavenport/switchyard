@@ -312,7 +312,7 @@ const loadSnapshotCliExport = async () => {
 const mindLabelFor = (preset, mindId) => {
   const config = PRESET_CONFIGS[preset] ?? PRESET_CONFIGS.encounter;
   const match = config.minds.find((mind) => mind.id === mindId);
-  return match ? `${match.label} (Mind ${mind.id})` : `Mind ${mindId}`;
+  return match ? `${match.label} (Mind ${match.id})` : `Mind ${mindId}`;
 };
 
 const renderMindButtons = (config) => {
@@ -722,7 +722,7 @@ const init = async () => {
   try {
     const wasmModule = await import("./pkg/switchyard_demo_wasm.js");
     const wasmUrl = new URL("./pkg/switchyard_demo_wasm_bg.wasm", import.meta.url);
-    await wasmModule.default(wasmUrl);
+    await wasmModule.default({ module_or_path: wasmUrl });
     wasmApp = new wasmModule.ShowcaseApp();
     applyPresetUi(currentPreset);
     refreshCliHandoffUi();
@@ -730,7 +730,7 @@ const init = async () => {
     await syncDraftFromWasm();
     setStatus("WASM core ready");
   } catch (error) {
-    setStatus("WASM core unavailable. Run wasm-pack build demo-wasm --target web --release --out-dir www/pkg", true);
+    setStatus(`WASM core unavailable: ${error instanceof Error ? error.message : String(error)}`, true);
     console.error(error);
     return;
   }

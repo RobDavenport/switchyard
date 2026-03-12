@@ -10,8 +10,18 @@ fn showcase_bootstrap_points_directly_at_wasm_payload() {
         "showcase bootstrap should compute the wasm payload URL explicitly"
     );
     assert!(
-        bootstrap.contains("await wasmModule.default(wasmUrl);"),
+        bootstrap.contains("await wasmModule.default({ module_or_path: wasmUrl });"),
         "showcase bootstrap should initialize the wasm module with the explicit payload URL"
+    );
+}
+
+#[test]
+fn showcase_mind_label_uses_matched_mind_id() {
+    let bootstrap = include_str!("../www/main.js");
+    assert!(
+        bootstrap
+            .contains("return match ? `${match.label} (Mind ${match.id})` : `Mind ${mindId}`;"),
+        "showcase mind labels should use the matched mind id instead of an out-of-scope variable"
     );
 }
 
