@@ -2,6 +2,8 @@
 
 Deterministic, `no_std` structured-concurrency behavior runtime for game logic and orchestration.
 
+**[Live Demo](https://robdavenport.github.io/switchyard/)** - open the GitHub Pages showcase in your browser.
+
 ## Project purpose
 
 Long-lived gameplay behavior is painful to express as scattered tick code, callback chains, and ad hoc state machines. `switchyard` provides a small, deterministic runtime for durational behavior, structured concurrency, inspection, tracing, and save/load-friendly execution state without imposing a framework.
@@ -65,6 +67,8 @@ Across all three presets, the demo exposes:
 The browser editor already emits CLI-compatible catalog JSON through the same contract-shaped
 document behind `script_json()`, and the CLI handoff panel can export both the current catalog and
 a compatible runtime snapshot for paired validation with `switchyard-cli snapshot-check`.
+
+The deployed demo is available at `https://robdavenport.github.io/switchyard/`.
 
 Build the package and serve the static site locally:
 
